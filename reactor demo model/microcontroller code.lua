@@ -1,21 +1,20 @@
 print('model "multi reactor v2.3" prototype 👢')
-local _GPart,_GParts,_GPort,_JEncode,_Trig,_Beep=GetPartFromPort,GetPartsFromPort,GetPort,JSONEncode,TriggerPort,Beep--[[gets the globals that comes with Pilot.Lua]]
+local _GPart,_GParts,_GPort,_JEncode,_Trig,_Beep=GetPartFromPort,GetPartsFromPort,GetPort,JSONEncode,TriggerPort,Beep
 local _system, _ram, twait = {}, {}, task.wait
 _system.startTime = tick()
 
 local targetTemp=--[[temp the reactor will aim for]] 950
 local tempTolerance=--[[size of acceptable difference from `targetTemp`]] 1/6
 local refuelWhen=--[[replace fuel when lower than this percentage, from 1(full) to 0(empty)]] .9
-local totalPorts=--[[range of ports connected to reactors, starting from `startPort`]] 8
+local totalPorts=--[[range of ports connected to reactors, starting from `startPort`]] 1
 local startPort=--[[only has to be changed if youre using this code alongside other code in the same micro]] 1
 
 
 
 
 _system.DebugMode =--[[print output stuff?]] true
-local meltdownTemp=--[[self explanatory. doubt this needs to be changed, though.]] 1200
---[[spaghetti 🍝😋, if you think my code is unreadable
-then you can prob shove it through chatgpt and have it explain things for you 💥]]
+local meltdownTemp=--[[self explanatory. doubt this needs to be changed.]] 1200
+--[[spaghetti 🍝😋]]
 local function GPart(Port: IntValue, ClassName: string)
 	return _GPart(Port, ClassName)
 end
@@ -175,7 +174,7 @@ for port=startPort, totalPorts do
 	coroutine.wrap(runAll)(port)
 end
 
---[[ code for when you want to use a microphone part ingame
+--[[ debug microphone
 if GetPart('Microphone')then
 	GetPart('Microphone').Chatted:Connect(function(plr,msg)
 		msg = string.split(msg, ' ')
@@ -192,4 +191,4 @@ if GetPart('Microphone')then
 end
 ]]
 print('meow. (code init done 🐱)')
-wait(math.huge)error('uhh...')
+wait(math.huge)
