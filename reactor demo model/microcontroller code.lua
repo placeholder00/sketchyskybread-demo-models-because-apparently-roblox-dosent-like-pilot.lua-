@@ -1,28 +1,32 @@
 print('model "multi reactor v2.3" prototype 👢')
-local _GPart,_GParts,_GPort,_JEncode,_Trig,_Beep=GetPartFromPort,GetPartsFromPort,GetPort,JSONEncode,TriggerPort,Beep
+local _JEncode,_Trig,_Beep,NW=JSONEncode,TriggerPort,Beep,Network
 local _system, _ram, twait = {}, {}, task.wait
 _system.startTime = tick()
 
 local targetTemp=--[[temp the reactor will aim for]] 950
 local tempTolerance=--[[size of acceptable difference from `targetTemp`]] 1/6
-local refuelWhen=--[[replace fuel when lower than this percentage, from 1(full) to 0(empty)]] .9
-local totalPorts=--[[range of ports connected to reactors, starting from `startPort`]] 1
-local startPort=--[[only has to be changed if youre using this code alongside other code in the same micro]] 1
+local refuelWhen=--[[replace fuel when lower than this percentage, from 1(full) to 0(empty)]] .75
+local portNetwork=--[[port id that all reactor cores use]] 1
 
 
 
 
-_system.DebugMode =--[[print output stuff?]] true
 local meltdownTemp=--[[self explanatory. doubt this needs to be changed.]] 1200
+_system.DebugMode =--[[print output stuff?]] true
 --[[spaghetti 🍝😋]]
-local function GPart(Port: IntValue, ClassName: string)
-	return _GPart(Port, ClassName)
+local function GPart(NetworkOBJ1: NetworkPeer, ClassName: string): Instance
+	return NetworkOBJ1:GetPart(ClassName)
 end
-local function GParts(Port: IntValue, ClassName: string)
-	return _GParts(Port, ClassName)
+local function GParts(NetworkOBJ2: NetworkPeer, ClassName: string)
+	local A: {Instance} =NetworkOBJ2:GetParts(ClassName)
+	return A
 end
-local function GPort(Port: IntValue)
-	return _GPort(Port)
+local function GPort(NetworkOBJ3: NetworkPeer, PortID: number): Instance
+	return NetworkOBJ3:GetPort(PortID)
+end
+local function GPorts(NetworkOBJ4: NetworkPeer, PortID: number)
+	local A: {Instance} =NetworkOBJ4:GetPorts(PortID)
+	return A
 end
 local function JEncode(Data: any, repr: boolean?)
 	if repr then
@@ -63,11 +67,11 @@ local function Brint(...: any?)
 	return{...}
 end
 
-local function runAll(portNum: number)
-	Brint(string.format('%i: startup 1 %s', portNum, tick() - _system.startTime))
-	local reactor = GPart(portNum,'Reactor')
-	local polysilicon = GPart(portNum,'Polysilicon')
-	local dispenser = GPart(portNum,'Dispenser')
+local function runAll(portNum: number, portIn: Instance)
+	Brint(string.format('%i: startup 1 %s', portNum, tick() - _system.startTime), portIn.GUID)
+	local reactor = GPart(portIn,'Reactor')
+	local polysilicon = GPart(portIn,'Polysilicon')
+	local dispenser = GPart(portIn,'Dispenser')
 
 	local honestReaction
 	local rodsActive = -1
@@ -170,8 +174,8 @@ local function runAll(portNum: number)
 	Brint(string.format('%i: startup 2 %s', portNum, tick() - _system.startTime))
 end
 
-for port=startPort, totalPorts do
-	coroutine.wrap(runAll)(port)
+for N,port in NW:GetSubnet(portNetwork):GetPorts(portNetwork)do
+	coroutine.wrap(runAll)(N,NW:GetSubnet(port))
 end
 
 --[[ debug microphone
@@ -191,4 +195,4 @@ if GetPart('Microphone')then
 end
 ]]
 print('meow. (code init done 🐱)')
-wait(math.huge)
+wait(1e9)print('uhh...')
